@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 6 76% 54%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 4 100% 59%;
+    --radius: 0.25rem;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    @apply bg-[#070806] text-[#F6F0E5];
+    font-family: 'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(230, 64, 46, 0.35);
+    color: #F6F0E5;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: 'Noto Serif JP', serif;
+  }
+
+  .font-body {
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  .text-vermilion {
+    color: #E6402E;
+  }
+
+  .bg-vermilion {
+    background-color: #E6402E;
+  }
+
+  .border-vermilion {
+    border-color: #E6402E;
+  }
+
+  .text-dim {
+    color: #8A8173;
+  }
+
+  .bg-charcoal {
+    background-color: #070806;
+  }
+
+  .text-offwhite {
+    color: #F6F0E5;
+  }
+}
+
+@layer utilities {
+  .clip-inset-0 {
+    clip-path: inset(0);
+  }
+}
