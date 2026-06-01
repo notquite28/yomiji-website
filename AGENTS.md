@@ -18,9 +18,7 @@ This is a Vite + React + TypeScript single-page landing site for 読路 / Yomiji
 
 - `src/sections/` — page sections and most GSAP/ScrollTrigger behavior.
 - `src/components/` — shared site components such as `Navigation` and `CustomCursor`.
-- `src/components/ui/` — shadcn/Radix-style reusable primitives. Prefer existing primitives over adding parallel UI abstractions.
 - `src/hooks/` — Lenis, cursor, and media-query hooks.
-- `src/lib/` — small shared utilities; `src/lib/utils.ts` exports `cn()`.
 - `public/images/yomiji/` — Yomiji screenshots used by phone/product sections.
 - `public/videos/` — hero video media.
 
@@ -41,7 +39,6 @@ There is no `test` script, coverage command, or formatter script configured.
 
 - Use TypeScript + React function components. Keep component-local animation state in refs unless React state is needed for rendering.
 - Use Tailwind utilities and existing theme tokens from `tailwind.config.js`: `charcoal`, `off-white`, `dim-grey`, `vermilion`, `font-display`, `font-body`.
-- Use `cn()` from `src/lib/utils.ts` when composing conditional class names.
 - Use the `@/*` alias for imports from `src`.
 - Animation code should:
   - register/use GSAP plugins explicitly where needed,
@@ -50,7 +47,6 @@ There is no `test` script, coverage command, or formatter script configured.
   - avoid layout-heavy animated properties when transforms work.
 - Navigation anchors are manual. Keep section ids aligned with `src/components/Navigation.tsx` (`about`, `lessons`, `contact`).
 - Custom cursor hover affordances use `data-cursor-hover`; links and buttons are also handled by `useCustomCursor`.
-- The UI library files under `src/components/ui/` are generated-style primitives. Make minimal, targeted edits there and preserve exports expected by shadcn/Radix patterns.
 
 ## Important Files
 
@@ -65,11 +61,10 @@ There is no `test` script, coverage command, or formatter script configured.
 - `vite.config.ts` — Vite plugins, `base: './'`, dev port, and `@` alias.
 - `tailwind.config.js` — visual tokens, fonts, colors, and custom animations.
 - `eslint.config.js` — flat ESLint setup.
-- `components.json` — shadcn/ui aliases and style settings.
 
 ## Runtime/Tooling Preferences
 
-- Runtime/tooling target is Node + npm. `info.md` notes Node 20; `package.json` does not declare `engines`.
+- Runtime/tooling target is Node + npm. `package.json` does not declare `engines`.
 - Package mode is ESM (`"type": "module"`).
 - Vite uses `@vitejs/plugin-react`; dev-only `kimi-plugin-inspect-react` is enabled in `vite.config.ts` when serving.
 - TypeScript is strict and split by project references (`tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`). `noUnusedLocals`, `noUnusedParameters`, and `noFallthroughCasesInSwitch` are enabled.
