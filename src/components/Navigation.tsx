@@ -19,6 +19,11 @@ export default function Navigation({ isLoaded }: NavigationProps) {
 
   }, [isLoaded]);
 
+  const scrollToTop = () => {
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    window.scrollTo({ top: 0, behavior });
+  };
+
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -37,6 +42,15 @@ export default function Navigation({ isLoaded }: NavigationProps) {
       }}
     >
       <div className="flex items-center justify-between gap-1 md:gap-5">
+        <button
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          className="rounded-full px-2.5 py-2 font-display text-[13px] md:text-[15px] text-off-white hover:text-vermilion focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vermilion/70 transition-colors duration-300"
+          data-cursor-hover
+        >
+          読路
+        </button>
+        <span className="h-4 w-px bg-off-white/10" aria-hidden="true" />
         <button
           onClick={() => scrollTo('about')}
           className="rounded-full px-2.5 py-2 text-[10px] md:text-[12px] uppercase tracking-[0.14em] md:tracking-[0.2em] text-off-white hover:text-vermilion focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vermilion/70 transition-colors duration-300 font-body"

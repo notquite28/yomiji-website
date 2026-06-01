@@ -9,10 +9,13 @@ export default function Preloader({ onComplete }: PreloaderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const circleRef = useRef<SVGCircleElement>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const [progress, setProgress] = useState(0);
 
   const handleComplete = useCallback(() => {
+    timelineRef.current?.kill();
     const tl = gsap.timeline();
+    timelineRef.current = tl;
 
     tl.to(textRef.current, {
       scale: 0.8,
@@ -54,7 +57,11 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       }
     }, 16);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      timelineRef.current?.kill();
+      timelineRef.current = null;
+    };
   }, [handleComplete]);
 
   const circumference = 2 * Math.PI * 48;

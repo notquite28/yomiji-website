@@ -8,6 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Footer() {
   const sectionRef = useRef<HTMLElement>(null);
   const blocksRef = useRef<(HTMLDivElement | null)[]>([]);
+  const blockContentsRef = useRef<(HTMLDivElement | null)[]>([]);
   const decorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,7 +37,10 @@ export default function Footer() {
           }
         );
 
-        gsap.to(block, {
+        const blockContent = blockContentsRef.current[i];
+        if (!blockContent) return;
+
+        gsap.to(blockContent, {
           y: -15 * (i + 1),
           ease: 'none',
           scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
@@ -63,10 +67,11 @@ export default function Footer() {
 
       <div className="max-w-[1400px] mx-auto px-4 md:px-[2.5vw] py-16 md:py-24 relative">
         <div
-          ref={(el) => { blocksRef.current[0] = el; }}
+          ref={(el) => { blocksRef.current[0] = el; blockContentsRef.current[0] = el?.firstElementChild as HTMLDivElement | null; }}
           className="text-center mb-16"
           style={{ opacity: 0 }}
         >
+          <div>
           <p className="text-[12px] uppercase tracking-[0.3em] text-vermilion font-body mb-4">
             Open Source
           </p>
@@ -104,13 +109,15 @@ export default function Footer() {
             <Github size={15} />
             View Source on GitHub
           </a>
+          </div>
         </div>
 
         <div
-          ref={(el) => { blocksRef.current[1] = el; }}
+          ref={(el) => { blocksRef.current[1] = el; blockContentsRef.current[1] = el?.firstElementChild as HTMLDivElement | null; }}
           className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-[#1A1A1A]"
           style={{ opacity: 0 }}
         >
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3">
             <span className="font-display text-off-white text-[18px]">読路</span>
             <span className="text-dim text-[12px] font-body">Yomiji</span>
@@ -128,6 +135,7 @@ export default function Footer() {
           >
             GitHub
           </a>
+          </div>
         </div>
       </div>
     </footer>

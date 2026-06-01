@@ -20,14 +20,24 @@ export default function HeroSection() {
 
     if (!wrap || !video || !uiOverlay || !blackout) return;
 
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    if (motionQuery.matches) {
+      gsap.set(blackout, { opacity: 0 });
+      gsap.set(uiOverlay, { opacity: 1 });
+      video.pause();
+      video.currentTime = 0;
+      return undefined;
+    }
+
     video.pause();
     video.currentTime = 0;
 
+    let disposed = false;
     let isSetup = false;
     let st: ScrollTrigger | null = null;
-
     const setupScrollScrub = () => {
-      if (isSetup) return;
+      if (disposed || isSetup) return;
       isSetup = true;
 
       const videoDuration = video.duration || 4;
@@ -85,16 +95,21 @@ export default function HeroSection() {
       });
     };
 
+    const handleLoadedData = () => {
+      if (!isSetup) setupScrollScrub();
+    };
+
     if (video.readyState >= 4) {
       setupScrollScrub();
     } else {
       video.addEventListener('canplaythrough', setupScrollScrub, { once: true });
-      video.addEventListener('loadeddata', () => {
-        if (!isSetup) setupScrollScrub();
-      }, { once: true });
+      video.addEventListener('loadeddata', handleLoadedData, { once: true });
     }
 
     return () => {
+      disposed = true;
+      video.removeEventListener('canplaythrough', setupScrollScrub);
+      video.removeEventListener('loadeddata', handleLoadedData);
       if (st) st.kill();
       isSetup = false;
     };
@@ -103,8 +118,7 @@ export default function HeroSection() {
   return (
     <section
       ref={wrapRef}
-      className="hero-scroll-sequence relative w-full bg-charcoal"
-      style={{ height: '400vh' }}
+      className="hero-scroll-sequence relative w-full h-screen bg-charcoal motion-safe:h-[400vh]"
     >
       <div className="hero-pinned-content w-full h-screen overflow-hidden bg-charcoal relative">
         {/* Permanent charcoal backing */}

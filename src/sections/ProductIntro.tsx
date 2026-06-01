@@ -12,7 +12,8 @@ export default function ProductIntro() {
   const descRef = useRef<HTMLParagraphElement>(null);
   const tagsRef = useRef<HTMLDivElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
-  const decorRef = useRef<HTMLDivElement>(null);
+  const decorRevealRef = useRef<HTMLDivElement>(null);
+  const decorParallaxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -30,20 +31,22 @@ export default function ProductIntro() {
       );
 
       // Decorative kanji parallax - moves horizontally as you scroll
-      if (decorRef.current) {
-        gsap.fromTo(decorRef.current,
-          { x: 100, opacity: 0 },
+      if (decorRevealRef.current && decorParallaxRef.current) {
+        gsap.fromTo(decorRevealRef.current,
+          { autoAlpha: 0 },
           {
-            x: 0, opacity: 0.04, duration: 1.2, ease: 'power2.out',
+            autoAlpha: 0.04, duration: 1.2, ease: 'power2.out',
             scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
           }
         );
-        // Continuous parallax drift
-        gsap.to(decorRef.current, {
-          x: -80,
-          ease: 'none',
-          scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
-        });
+        gsap.fromTo(decorParallaxRef.current,
+          { x: 100 },
+          {
+            x: -80,
+            ease: 'none',
+            scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
+          }
+        );
       }
     }, section);
 
@@ -56,13 +59,17 @@ export default function ProductIntro() {
       ref={sectionRef}
       className="relative z-10 bg-charcoal py-[80px] md:py-[120px] overflow-hidden"
     >
-      {/* Decorative parallax kanji */}
       <div
-        ref={decorRef}
-        className="absolute top-1/2 right-0 -translate-y-1/2 font-display text-[300px] md:text-[500px] text-off-white pointer-events-none select-none leading-none"
+        ref={decorRevealRef}
+        className="absolute top-1/2 right-0 -translate-y-1/2 pointer-events-none select-none"
         style={{ opacity: 0 }}
       >
-        道
+        <div
+          ref={decorParallaxRef}
+          className="font-display text-[300px] md:text-[500px] text-off-white leading-none"
+        >
+          道
+        </div>
       </div>
 
       <div className="max-w-[1400px] mx-auto px-4 md:px-[2.5vw] relative">
