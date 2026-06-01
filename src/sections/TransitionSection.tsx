@@ -16,67 +16,76 @@ export default function TransitionSection() {
     const section = sectionRef.current;
     if (!section) return;
 
-    const ctx = gsap.context(() => {
-      // Vermilion line scales in
-      if (lineRef.current) {
-        gsap.fromTo(lineRef.current,
-          { scaleY: 0, opacity: 0 },
-          {
-            scaleY: 1, opacity: 1, duration: 0.8, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 90%', toggleActions: 'play none none reverse' },
+    const mm = gsap.matchMedia();
+
+    mm.add(
+      {
+        isDesktop: '(min-width: 768px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, reduceMotion } = context.conditions as { isDesktop: boolean; reduceMotion: boolean };
+
+        if (lineRef.current) {
+          gsap.fromTo(lineRef.current,
+            { scaleY: 0, autoAlpha: 0 },
+            {
+              scaleY: 1, autoAlpha: 1, duration: reduceMotion ? 0 : 0.8, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 90%', toggleActions: 'play none none reverse' },
+            }
+          );
+        }
+
+        if (kanjiRef.current) {
+          gsap.fromTo(kanjiRef.current,
+            { autoAlpha: 0 },
+            {
+              autoAlpha: 1, duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : 0.1, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
+            }
+          );
+
+          if (isDesktop && !reduceMotion) {
+            gsap.to(kanjiRef.current, {
+              y: -30,
+              ease: 'none',
+              scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
+            });
           }
-        );
-      }
+        }
 
-      // Product wordmark fades in; vertical drift is owned by the parallax tween
-      if (kanjiRef.current) {
-        gsap.fromTo(kanjiRef.current,
-          { opacity: 0 },
-          {
-            opacity: 1, duration: 0.8, delay: 0.1, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
-          }
-        );
-        gsap.to(kanjiRef.current, {
-          y: -30,
-          ease: 'none',
-          scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
-        });
-      }
+        if (subRef.current) {
+          gsap.fromTo(subRef.current,
+            { autoAlpha: 0 },
+            {
+              autoAlpha: 1, duration: reduceMotion ? 0 : 0.6, delay: reduceMotion ? 0 : 0.25, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
+            }
+          );
+        }
 
-      // Subtitle fades in
-      if (subRef.current) {
-        gsap.fromTo(subRef.current,
-          { opacity: 0 },
-          {
-            opacity: 1, duration: 0.6, delay: 0.25, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
-          }
-        );
-      }
+        if (dividerRef.current) {
+          gsap.fromTo(dividerRef.current,
+            { autoAlpha: 0, scaleX: 0 },
+            {
+              autoAlpha: 1, scaleX: 1, duration: reduceMotion ? 0 : 0.6, delay: reduceMotion ? 0 : 0.35, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
+            }
+          );
+        }
 
-      // Divider scales in
-      if (dividerRef.current) {
-        gsap.fromTo(dividerRef.current,
-          { opacity: 0, scaleX: 0 },
-          {
-            opacity: 1, scaleX: 1, duration: 0.6, delay: 0.35, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
-          }
-        );
-      }
+        if (decorRef.current && isDesktop && !reduceMotion) {
+          gsap.to(decorRef.current, {
+            x: 60,
+            ease: 'none',
+            scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.5 },
+          });
+        }
+      },
+      section
+    );
 
-      // Decorative element parallax drift
-      if (decorRef.current) {
-        gsap.to(decorRef.current, {
-          x: 60,
-          ease: 'none',
-          scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.5 },
-        });
-      }
-    }, section);
-
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (
@@ -85,7 +94,6 @@ export default function TransitionSection() {
       ref={sectionRef}
       className="relative z-10 bg-charcoal mt-[-1px] overflow-hidden"
     >
-      {/* Decorative reading-path line */}
       <div
         ref={decorRef}
         className="absolute bottom-0 right-[10%] w-[1px] h-[300px] bg-vermilion/[0.08]"

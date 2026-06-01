@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+const customCursorQuery = '(hover: hover) and (pointer: fine) and (min-width: 768px)';
+
 export function useCustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const posRef = useRef({ x: 0, y: 0 });
@@ -9,7 +11,7 @@ export function useCustomCursor() {
 
   useEffect(() => {
     const cursor = cursorRef.current;
-    if (!cursor) return;
+    if (!cursor || !window.matchMedia(customCursorQuery).matches) return;
 
     const onMouseMove = (e: MouseEvent) => {
       targetRef.current.x = e.clientX;

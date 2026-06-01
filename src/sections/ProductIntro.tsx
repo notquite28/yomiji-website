@@ -19,38 +19,51 @@ export default function ProductIntro() {
     const section = sectionRef.current;
     if (!section) return;
 
-    const ctx = gsap.context(() => {
-      const elements = [badgeRef.current, titleRef.current, descRef.current, tagsRef.current, buttonsRef.current].filter(Boolean);
+    const mm = gsap.matchMedia();
 
-      gsap.fromTo(elements,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1, y: 0, duration: 0.8, stagger: 0.12, ease: 'power2.out',
-          scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
+    mm.add(
+      {
+        isDesktop: '(min-width: 768px)',
+        isMobile: '(max-width: 767px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, isMobile, reduceMotion } = context.conditions as { isDesktop: boolean; isMobile: boolean; reduceMotion: boolean };
+        const elements = [badgeRef.current, titleRef.current, descRef.current, tagsRef.current, buttonsRef.current].filter(Boolean);
+
+        gsap.fromTo(elements,
+          { autoAlpha: 0, y: reduceMotion ? 0 : isMobile ? 24 : 40 },
+          {
+            autoAlpha: 1, y: 0, duration: reduceMotion ? 0 : 0.8, stagger: reduceMotion ? 0 : 0.12, ease: 'power2.out',
+            scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
+          }
+        );
+
+        if (decorRevealRef.current && decorParallaxRef.current) {
+          gsap.fromTo(decorRevealRef.current,
+            { autoAlpha: 0 },
+            {
+              autoAlpha: 0.04, duration: reduceMotion ? 0 : 1.2, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
+            }
+          );
+
+          if (isDesktop && !reduceMotion) {
+            gsap.fromTo(decorParallaxRef.current,
+              { x: 100 },
+              {
+                x: -80,
+                ease: 'none',
+                scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
+              }
+            );
+          }
         }
-      );
+      },
+      section
+    );
 
-      // Decorative kanji parallax - moves horizontally as you scroll
-      if (decorRevealRef.current && decorParallaxRef.current) {
-        gsap.fromTo(decorRevealRef.current,
-          { autoAlpha: 0 },
-          {
-            autoAlpha: 0.04, duration: 1.2, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
-          }
-        );
-        gsap.fromTo(decorParallaxRef.current,
-          { x: 100 },
-          {
-            x: -80,
-            ease: 'none',
-            scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
-          }
-        );
-      }
-    }, section);
-
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (

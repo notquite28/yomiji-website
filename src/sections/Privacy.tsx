@@ -27,36 +27,16 @@ export default function Privacy() {
     mm.add(
       {
         isDesktop: '(min-width: 768px)',
-        isMobile: '(max-width: 767px)',
         reduceMotion: '(prefers-reduced-motion: reduce)',
       },
       (context) => {
-        const { isDesktop, isMobile, reduceMotion } = context.conditions as { isDesktop: boolean; isMobile: boolean; reduceMotion: boolean };
+        const { isDesktop, reduceMotion } = context.conditions as { isDesktop: boolean; reduceMotion: boolean };
 
-        if (reduceMotion) {
-          gsap.set(track, { clearProps: 'transform' });
+        gsap.set(track, { clearProps: 'transform' });
+
+        if (!isDesktop || reduceMotion) {
           return;
         }
-
-        if (isMobile) {
-          gsap.set(track, { x: 0, y: 0 });
-          gsap.to(track, {
-            y: () => -(track.scrollHeight - window.innerHeight),
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top top',
-              end: () => `+=${track.scrollHeight - window.innerHeight}`,
-              scrub: 1,
-              pin,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-            },
-          });
-          return;
-        }
-
-        if (!isDesktop) return;
 
         gsap.to(track, {
           x: () => -(track.scrollWidth - window.innerWidth),
@@ -82,11 +62,11 @@ export default function Privacy() {
     <section
       id="privacy"
       ref={sectionRef}
-      className="relative z-20 overflow-hidden bg-charcoal motion-reduce:overflow-visible md:h-[calc(100vh+300vw)] motion-reduce:md:h-auto"
+      className="relative z-20 overflow-hidden bg-charcoal md:h-[calc(100vh+300vw)] motion-reduce:md:h-auto"
     >
       <div
         ref={pinRef}
-        className="relative z-20 flex h-[100svh] w-full items-start overflow-hidden bg-charcoal motion-reduce:h-auto motion-reduce:overflow-visible md:h-screen md:items-center motion-reduce:md:h-auto"
+        className="relative z-20 flex h-auto w-full items-start overflow-visible bg-charcoal md:h-screen md:items-center md:overflow-hidden motion-reduce:md:h-auto motion-reduce:md:overflow-visible"
       >
         <div
           ref={trackRef}
@@ -95,7 +75,7 @@ export default function Privacy() {
           {words.map((word, i) => (
             <article
               key={word.text}
-              className="relative flex min-h-[100svh] w-full shrink-0 flex-col justify-center overflow-hidden border-t border-off-white/10 bg-transparent py-16 md:h-screen md:w-screen md:border-0 md:px-[8vw]"
+              className="relative flex min-h-[82svh] w-full shrink-0 flex-col justify-center overflow-hidden border-t border-off-white/10 bg-transparent py-16 md:h-screen md:min-h-0 md:w-screen md:border-0 md:px-[8vw]"
             >
               <span className="absolute right-6 top-6 font-body text-[13px] leading-none tracking-[0.32em] text-vermilion/50 md:right-[8vw] md:top-[14vh]">
                 0{i + 1} / 04

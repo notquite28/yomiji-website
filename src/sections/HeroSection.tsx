@@ -20,108 +20,108 @@ export default function HeroSection() {
 
     if (!wrap || !video || !uiOverlay || !blackout) return;
 
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mm = gsap.matchMedia();
 
-    if (motionQuery.matches) {
-      gsap.set(blackout, { opacity: 0 });
-      gsap.set(uiOverlay, { opacity: 1 });
-      video.pause();
-      video.currentTime = 0;
-      return undefined;
-    }
+    mm.add(
+      {
+        isDesktop: '(min-width: 768px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, reduceMotion } = context.conditions as { isDesktop: boolean; reduceMotion: boolean };
 
-    video.pause();
-    video.currentTime = 0;
+        gsap.set(blackout, { opacity: 0 });
+        gsap.set(uiOverlay, { opacity: 1 });
+        video.pause();
+        try { video.currentTime = 0; } catch { /* noop */ }
 
-    let disposed = false;
-    let isSetup = false;
-    let st: ScrollTrigger | null = null;
-    const setupScrollScrub = () => {
-      if (disposed || isSetup) return;
-      isSetup = true;
+        if (!isDesktop || reduceMotion) {
+          return;
+        }
 
-      const videoDuration = video.duration || 4;
+        let disposed = false;
+        let isSetup = false;
+        let st: ScrollTrigger | null = null;
 
-      // Force initial states
-      gsap.set(blackout, { opacity: 0 });
-      gsap.set(uiOverlay, { opacity: 1 });
+        const setupScrollScrub = () => {
+          if (disposed || isSetup) return;
+          isSetup = true;
 
-      st = ScrollTrigger.create({
-        trigger: wrap,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 1,
-        pin: wrap.querySelector('.hero-pinned-content'),
-        anticipatePin: 1,
-        onUpdate: (self) => {
-          const progress = self.progress;
+          const videoDuration = video.duration || 4;
 
-          // --- VIDEO SCRUB (0% to 85%) ---
-          // Cap video at 85% progress so it doesn't show final lush frames
-          const videoProgress = Math.min(progress / 0.85, 1);
-          const targetTime = videoProgress * videoDuration * 0.95; // stay 5% shy of end frame
-          try {
-            if (Math.abs(video.currentTime - targetTime) > 0.005) {
-              video.currentTime = targetTime;
-            }
-          } catch { /* noop */ }
+          st = ScrollTrigger.create({
+            trigger: wrap,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1,
+            pin: wrap.querySelector('.hero-pinned-content'),
+            anticipatePin: 1,
+            onUpdate: (self) => {
+              const progress = self.progress;
 
-          // --- BLACKOUT (75% to 90%) — DIRECT, zero scrub lag ---
-          // Drive opacity directly from progress, not from GSAP timeline
-          // so there's no smoothing delay hiding the video
-          let blackoutOpacity = 0;
-          if (progress > 0.75) {
-            blackoutOpacity = Math.min(1, (progress - 0.75) / 0.15);
-          }
-          blackout.style.opacity = String(blackoutOpacity);
+              const videoProgress = Math.min(progress / 0.85, 1);
+              const targetTime = videoProgress * videoDuration * 0.95;
+              try {
+                if (Math.abs(video.currentTime - targetTime) > 0.005) {
+                  video.currentTime = targetTime;
+                }
+              } catch { /* noop */ }
 
-          // --- UI FADE (0% to 50%) ---
-          let uiOpacity = 1;
-          if (progress > 0.35) {
-            uiOpacity = Math.max(0, 1 - (progress - 0.35) / 0.15);
-          }
-          uiOverlay.style.opacity = String(uiOpacity);
-        },
-        onLeave: () => {
-          // Hard-force everything to final state
-          blackout.style.opacity = '1';
-          uiOverlay.style.opacity = '0';
-          try { video.currentTime = 0; } catch { /* noop */ }
-        },
-        onEnterBack: () => {
-          gsap.set(blackout, { opacity: 0 });
-          gsap.set(uiOverlay, { opacity: 1 });
-        },
-      });
-    };
+              let blackoutOpacity = 0;
+              if (progress > 0.75) {
+                blackoutOpacity = Math.min(1, (progress - 0.75) / 0.15);
+              }
+              blackout.style.opacity = String(blackoutOpacity);
 
-    const handleLoadedData = () => {
-      if (!isSetup) setupScrollScrub();
-    };
+              let uiOpacity = 1;
+              if (progress > 0.35) {
+                uiOpacity = Math.max(0, 1 - (progress - 0.35) / 0.15);
+              }
+              uiOverlay.style.opacity = String(uiOpacity);
+            },
+            onLeave: () => {
+              blackout.style.opacity = '1';
+              uiOverlay.style.opacity = '0';
+              try { video.currentTime = 0; } catch { /* noop */ }
+            },
+            onEnterBack: () => {
+              gsap.set(blackout, { opacity: 0 });
+              gsap.set(uiOverlay, { opacity: 1 });
+            },
+          });
+        };
 
-    if (video.readyState >= 4) {
-      setupScrollScrub();
-    } else {
-      video.addEventListener('canplaythrough', setupScrollScrub, { once: true });
-      video.addEventListener('loadeddata', handleLoadedData, { once: true });
-    }
+        const handleLoadedData = () => {
+          if (!isSetup) setupScrollScrub();
+        };
 
-    return () => {
-      disposed = true;
-      video.removeEventListener('canplaythrough', setupScrollScrub);
-      video.removeEventListener('loadeddata', handleLoadedData);
-      if (st) st.kill();
-      isSetup = false;
-    };
+        if (video.readyState >= 4) {
+          setupScrollScrub();
+        } else {
+          video.addEventListener('canplaythrough', setupScrollScrub, { once: true });
+          video.addEventListener('loadeddata', handleLoadedData, { once: true });
+        }
+
+        return () => {
+          disposed = true;
+          video.removeEventListener('canplaythrough', setupScrollScrub);
+          video.removeEventListener('loadeddata', handleLoadedData);
+          st?.kill();
+          isSetup = false;
+        };
+      },
+      wrap
+    );
+
+    return () => mm.revert();
   }, []);
 
   return (
     <section
       ref={wrapRef}
-      className="hero-scroll-sequence relative w-full h-screen bg-charcoal motion-safe:h-[400vh]"
+      className="hero-scroll-sequence relative w-full h-[100svh] bg-charcoal md:h-[400vh] motion-reduce:md:h-screen"
     >
-      <div className="hero-pinned-content w-full h-screen overflow-hidden bg-charcoal relative">
-        {/* Permanent charcoal backing */}
+      <div className="hero-pinned-content w-full h-[100svh] overflow-hidden bg-charcoal relative md:h-screen">
         <div className="absolute inset-0 bg-charcoal z-[5]" />
 
         <video
@@ -130,19 +130,16 @@ export default function HeroSection() {
           src={heroVideoSrc}
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           style={{ pointerEvents: 'none' }}
         />
 
-        {/* Blackout overlay — opacity driven directly in onUpdate, zero GSAP lag */}
         <div
           ref={blackoutRef}
           className="absolute inset-0 bg-charcoal z-[15] pointer-events-none"
           style={{ opacity: 0 }}
         />
 
-
-        {/* UI overlay — opacity driven directly in onUpdate */}
         <div
           ref={uiRef}
           className="hero-ui-overlay absolute inset-0 z-[20] flex flex-col justify-between p-4 md:p-10"

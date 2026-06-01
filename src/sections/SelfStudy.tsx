@@ -32,54 +32,62 @@ export default function SelfStudy() {
     const section = sectionRef.current;
     if (!section) return;
 
-    const ctx = gsap.context(() => {
-      // Title slides in
-      if (titleRef.current) {
-        gsap.fromTo(titleRef.current,
-          { opacity: 0, x: -80 },
-          {
-            opacity: 1, x: 0, duration: 1, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
-          }
-        );
-      }
+    const mm = gsap.matchMedia();
 
-      // Vertical line grows
-      if (lineRef.current) {
-        gsap.fromTo(lineRef.current,
-          { scaleY: 0 },
-          {
-            scaleY: 1, duration: 1.2, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 70%', toggleActions: 'play none none reverse' },
-          }
-        );
-      }
+    mm.add(
+      {
+        isDesktop: '(min-width: 768px)',
+        isMobile: '(max-width: 767px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, isMobile, reduceMotion } = context.conditions as { isDesktop: boolean; isMobile: boolean; reduceMotion: boolean };
 
-      // Each item: dramatic reveal with parallax
-      itemsRef.current.forEach((item, i) => {
-        if (!item) return;
+        if (titleRef.current) {
+          gsap.fromTo(titleRef.current,
+            { autoAlpha: 0, x: reduceMotion || isMobile ? 0 : -80, y: reduceMotion ? 0 : isMobile ? 24 : 0 },
+            {
+              autoAlpha: 1, x: 0, y: 0, duration: reduceMotion ? 0 : 1, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
+            }
+          );
+        }
 
-        gsap.fromTo(item,
-          { opacity: 0, y: 80 },
-          {
-            opacity: 1, y: 0, duration: 0.8, delay: i * 0.15, ease: 'power2.out',
-            scrollTrigger: { trigger: item, start: 'top 88%', toggleActions: 'play none none reverse' },
-          }
-        );
+        if (lineRef.current) {
+          gsap.fromTo(lineRef.current,
+            { scaleY: 0 },
+            {
+              scaleY: 1, duration: reduceMotion ? 0 : 1.2, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 70%', toggleActions: 'play none none reverse' },
+            }
+          );
+        }
 
-        // Each card drifts at different speed
-        const parallax = item.querySelector<HTMLDivElement>('.self-study-card-content');
-        if (!parallax) return;
+        itemsRef.current.forEach((item, i) => {
+          if (!item) return;
 
-        gsap.to(parallax, {
-          y: -20 * (i + 1),
-          ease: 'none',
-          scrollTrigger: { trigger: item, start: 'top bottom', end: 'bottom top', scrub: 2 },
+          gsap.fromTo(item,
+            { autoAlpha: 0, y: reduceMotion ? 0 : isMobile ? 28 : 80 },
+            {
+              autoAlpha: 1, y: 0, duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : i * 0.15, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: item, start: 'top 88%', toggleActions: 'play none none reverse' },
+            }
+          );
+
+          const parallax = item.querySelector<HTMLDivElement>('.self-study-card-content');
+          if (!parallax || !isDesktop || reduceMotion) return;
+
+          gsap.to(parallax, {
+            y: -20 * (i + 1),
+            ease: 'none',
+            scrollTrigger: { trigger: item, start: 'top bottom', end: 'bottom top', scrub: 2 },
+          });
         });
-      });
-    }, section);
+      },
+      section
+    );
 
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (
@@ -90,7 +98,6 @@ export default function SelfStudy() {
     >
       <div className="max-w-[1400px] mx-auto px-4 md:px-[2.5vw]">
         <div className="flex flex-col md:flex-row gap-16 md:gap-24">
-          {/* Left: Title with vertical line */}
           <div className="md:w-[300px] flex-shrink-0 relative">
             <div
               ref={lineRef}
@@ -113,7 +120,6 @@ export default function SelfStudy() {
             </div>
           </div>
 
-          {/* Right: Stacked numbered items */}
           <div className="flex-1 grid gap-4">
             {items.map((item, i) => (
               <div

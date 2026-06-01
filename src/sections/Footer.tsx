@@ -15,40 +15,50 @@ export default function Footer() {
     const section = sectionRef.current;
     if (!section) return;
 
-    const ctx = gsap.context(() => {
-      // Decorative parallax
-      if (decorRef.current) {
-        gsap.to(decorRef.current, {
-          y: -40,
-          ease: 'none',
-          scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.5 },
+    const mm = gsap.matchMedia();
+
+    mm.add(
+      {
+        isDesktop: '(min-width: 768px)',
+        isMobile: '(max-width: 767px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, isMobile, reduceMotion } = context.conditions as { isDesktop: boolean; isMobile: boolean; reduceMotion: boolean };
+
+        if (decorRef.current && isDesktop && !reduceMotion) {
+          gsap.to(decorRef.current, {
+            y: -40,
+            ease: 'none',
+            scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 1.5 },
+          });
+        }
+
+        blocksRef.current.forEach((block, i) => {
+          if (!block) return;
+
+          gsap.fromTo(block,
+            { autoAlpha: 0, y: reduceMotion ? 0 : isMobile ? 20 : 30 },
+            {
+              autoAlpha: 1, y: 0, duration: reduceMotion ? 0 : 0.7, delay: reduceMotion ? 0 : i * 0.1, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
+            }
+          );
+
+          const blockContent = blockContentsRef.current[i];
+          if (!blockContent || !isDesktop || reduceMotion) return;
+
+          gsap.to(blockContent, {
+            y: -15 * (i + 1),
+            ease: 'none',
+            scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
+          });
         });
-      }
+      },
+      section
+    );
 
-      // Content blocks with stagger + parallax
-      blocksRef.current.forEach((block, i) => {
-        if (!block) return;
-
-        gsap.fromTo(block,
-          { opacity: 0, y: 30 },
-          {
-            opacity: 1, y: 0, duration: 0.7, delay: i * 0.1, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
-          }
-        );
-
-        const blockContent = blockContentsRef.current[i];
-        if (!blockContent) return;
-
-        gsap.to(blockContent, {
-          y: -15 * (i + 1),
-          ease: 'none',
-          scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
-        });
-      });
-    }, section);
-
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (
@@ -57,7 +67,6 @@ export default function Footer() {
       ref={sectionRef}
       className="relative z-10 bg-charcoal border-t border-[#1A1A1A] overflow-hidden"
     >
-      {/* Decorative faded kanji */}
       <div
         ref={decorRef}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display text-[200px] md:text-[300px] text-off-white/[0.02] pointer-events-none select-none leading-none"

@@ -7,88 +7,140 @@ gsap.registerPlugin(ScrollTrigger);
 const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
 const phones = [
-  { id: 1, src: assetUrl('images/yomiji/dash.jpg'), label: 'Dashboard' },
-  { id: 2, src: assetUrl('images/yomiji/reviews.jpg'), label: 'Reviews' },
-  { id: 3, src: assetUrl('images/yomiji/lessons.jpg'), label: 'Lessons' },
-  { id: 4, src: assetUrl('images/yomiji/anki.jpg'), label: 'Anki Mode' },
-  { id: 5, src: assetUrl('images/yomiji/subject.jpg'), label: 'Subjects' },
+  {
+    id: 1,
+    src: assetUrl('images/yomiji/dash.jpg'),
+    srcSet: `${assetUrl('images/yomiji/dash-540.webp')} 540w, ${assetUrl('images/yomiji/dash-720.webp')} 720w, ${assetUrl('images/yomiji/dash.jpg')} 1440w`,
+    label: 'Dashboard',
+  },
+  {
+    id: 2,
+    src: assetUrl('images/yomiji/reviews.jpg'),
+    srcSet: `${assetUrl('images/yomiji/reviews-540.webp')} 540w, ${assetUrl('images/yomiji/reviews-720.webp')} 720w, ${assetUrl('images/yomiji/reviews.jpg')} 1440w`,
+    label: 'Reviews',
+  },
+  {
+    id: 3,
+    src: assetUrl('images/yomiji/lessons.jpg'),
+    srcSet: `${assetUrl('images/yomiji/lessons-540.webp')} 540w, ${assetUrl('images/yomiji/lessons-720.webp')} 720w, ${assetUrl('images/yomiji/lessons.jpg')} 1440w`,
+    label: 'Lessons',
+  },
+  {
+    id: 4,
+    src: assetUrl('images/yomiji/anki.jpg'),
+    srcSet: `${assetUrl('images/yomiji/anki-540.webp')} 540w, ${assetUrl('images/yomiji/anki-720.webp')} 720w, ${assetUrl('images/yomiji/anki.jpg')} 1440w`,
+    label: 'Anki Mode',
+  },
+  {
+    id: 5,
+    src: assetUrl('images/yomiji/subject.jpg'),
+    srcSet: `${assetUrl('images/yomiji/subject-540.webp')} 540w, ${assetUrl('images/yomiji/subject-720.webp')} 720w, ${assetUrl('images/yomiji/subject.jpg')} 1440w`,
+    label: 'Subjects',
+  },
 ];
-
 
 export default function PhoneShowcase() {
   const sectionRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
-    const track = trackRef.current;
-    if (!section || !track) return;
+    if (!section) return;
 
-    const ctx = gsap.context(() => {
-      const isMobile = window.matchMedia('(max-width: 767px)').matches;
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const phoneEls = gsap.utils.toArray<HTMLDivElement>('.phone-item');
-      const spread = isMobile ? 76 : 132;
-      const ySpread = isMobile ? 18 : 34;
+    const mm = gsap.matchMedia();
 
-      if (headerRef.current) {
-        gsap.fromTo(headerRef.current,
-          { autoAlpha: 0, y: reduceMotion ? 0 : 30 },
-          {
-            autoAlpha: 1, y: 0, duration: reduceMotion ? 0 : 0.8, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
-          }
-        );
-      }
+    mm.add(
+      {
+        isDesktop: '(min-width: 768px)',
+        isMobile: '(max-width: 767px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, isMobile, reduceMotion } = context.conditions as { isDesktop: boolean; isMobile: boolean; reduceMotion: boolean };
+        const phoneEls = gsap.utils.toArray<HTMLDivElement>('.phone-item', section);
 
-      phoneEls.forEach((phone, i) => {
-        const offset = i - 2;
-        gsap.set(phone, {
-          x: offset * spread,
-          y: Math.abs(offset) * ySpread,
-          rotation: offset * (isMobile ? 3 : 5),
-          scale: 1,
-          autoAlpha: 1,
+        if (headerRef.current) {
+          gsap.fromTo(headerRef.current,
+            { autoAlpha: 0, y: reduceMotion ? 0 : 30 },
+            {
+              autoAlpha: 1, y: 0, duration: reduceMotion ? 0 : 0.8, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 85%', toggleActions: 'play none none reverse' },
+            }
+          );
+        }
+
+        if (reduceMotion) {
+          gsap.set(phoneEls, { autoAlpha: 1, x: 0, y: 0, rotation: 0, scale: 1, clearProps: 'willChange' });
+          return;
+        }
+
+        if (isMobile) {
+          gsap.set(phoneEls, { x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 0 });
+
+          phoneEls.forEach((phone, i) => {
+            gsap.fromTo(phone,
+              { autoAlpha: 0, y: 28 },
+              {
+                autoAlpha: 1,
+                y: 0,
+                duration: 0.55,
+                delay: i * 0.06,
+                ease: 'power2.out',
+                scrollTrigger: { trigger: phone, start: 'top 88%', toggleActions: 'play none none reverse' },
+              }
+            );
+          });
+          return;
+        }
+
+        if (!isDesktop) return;
+
+        phoneEls.forEach((phone, i) => {
+          const offset = i - 2;
+          gsap.set(phone, {
+            x: offset * 132,
+            y: Math.abs(offset) * 34,
+            rotation: offset * 5,
+            scale: 1,
+            autoAlpha: 1,
+          });
         });
-      });
 
-      if (reduceMotion) return;
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: 'top top',
+            end: () => `+=${window.innerHeight * 1.8}`,
+            scrub: 1,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: () => `+=${window.innerHeight * 1.8}`,
-          scrub: 1,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
+        tl.to(phoneEls, {
+          x: 0,
+          y: (i) => (i - 2) * 8,
+          rotation: (i) => (i - 2) * 2,
+          scale: (i) => 1 - Math.abs(i - 2) * 0.045,
+          duration: 0.62,
+          ease: 'power2.inOut',
+          stagger: { each: 0.015, from: 'center' },
+        });
 
-      tl.to(phoneEls, {
-        x: 0,
-        y: (i) => (i - 2) * (isMobile ? 5 : 8),
-        rotation: (i) => (i - 2) * (isMobile ? 1.4 : 2),
-        scale: (i) => 1 - Math.abs(i - 2) * 0.045,
-        duration: 0.62,
-        ease: 'power2.inOut',
-        stagger: { each: 0.015, from: 'center' },
-      });
+        tl.to(phoneEls, {
+          y: (i) => -window.innerHeight * 0.42 + (i - 2) * 8,
+          scale: (i) => 0.78 - Math.abs(i - 2) * 0.03,
+          autoAlpha: (i) => (Math.abs(i - 2) > 1 ? 0.45 : 0.82),
+          duration: 0.38,
+          ease: 'power2.in',
+        });
+      },
+      section
+    );
 
-      tl.to(phoneEls, {
-        y: (i) => -window.innerHeight * (isMobile ? 0.32 : 0.42) + (i - 2) * (isMobile ? 5 : 8),
-        scale: (i) => 0.78 - Math.abs(i - 2) * 0.03,
-        autoAlpha: (i) => (Math.abs(i - 2) > 1 ? 0.45 : 0.82),
-        duration: 0.38,
-        ease: 'power2.in',
-      });
-    }, section);
-
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
-
 
   return (
     <section
@@ -109,14 +161,11 @@ export default function PhoneShowcase() {
           </h2>
         </div>
 
-        <div
-          ref={trackRef}
-          className="relative mx-auto flex min-h-[560px] items-center justify-center md:min-h-[620px]"
-        >
+        <div className="relative -mx-4 flex min-h-[440px] snap-x snap-mandatory items-center gap-5 overflow-x-auto px-4 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-auto md:min-h-[620px] md:justify-center md:gap-0 md:overflow-visible md:px-0 md:pb-0">
           {phones.map((phone, i) => (
             <div
               key={phone.id}
-              className="phone-item absolute w-[180px] md:w-[240px]"
+              className="phone-item relative w-[180px] shrink-0 snap-center md:absolute md:w-[240px]"
               style={{
                 zIndex: 10 - Math.abs(i - 2),
                 willChange: 'transform',
@@ -127,6 +176,8 @@ export default function PhoneShowcase() {
                 <div className="overflow-hidden rounded-[1.35rem] bg-charcoal aspect-[720/1584]">
                   <img
                     src={phone.src}
+                    srcSet={phone.srcSet}
+                    sizes="(max-width: 767px) 180px, 240px"
                     alt={`${phone.label} screen`}
                     className="h-full w-full object-cover object-top"
                     loading="lazy"

@@ -14,51 +14,62 @@ export default function Lessons() {
     const section = sectionRef.current;
     if (!section) return;
 
-    const ctx = gsap.context(() => {
-      // Title parallax
-      if (titleRef.current) {
-        gsap.fromTo(titleRef.current,
-          { opacity: 0, y: 60 },
-          {
-            opacity: 1, y: 0, duration: 1, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
-          }
-        );
-      }
+    const mm = gsap.matchMedia();
 
-      // Marquee slides in from right
-      if (marqueeRef.current) {
-        gsap.fromTo(marqueeRef.current,
-          { autoAlpha: 0 },
-          {
-            autoAlpha: 1, duration: 1.2, ease: 'power2.out',
-            scrollTrigger: { trigger: section, start: 'top 70%', toggleActions: 'play none none reverse' },
+    mm.add(
+      {
+        isDesktop: '(min-width: 768px)',
+        isMobile: '(max-width: 767px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, isMobile, reduceMotion } = context.conditions as { isDesktop: boolean; isMobile: boolean; reduceMotion: boolean };
+
+        if (titleRef.current) {
+          gsap.fromTo(titleRef.current,
+            { autoAlpha: 0, y: reduceMotion ? 0 : isMobile ? 28 : 60 },
+            {
+              autoAlpha: 1, y: 0, duration: reduceMotion ? 0 : 1, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 80%', toggleActions: 'play none none reverse' },
+            }
+          );
+        }
+
+        if (marqueeRef.current) {
+          gsap.fromTo(marqueeRef.current,
+            { autoAlpha: 0 },
+            {
+              autoAlpha: 1, duration: reduceMotion ? 0 : 1.2, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: section, start: 'top 70%', toggleActions: 'play none none reverse' },
+            }
+          );
+
+          if (isDesktop && !reduceMotion) {
+            gsap.to(marqueeRef.current, {
+              x: -100,
+              ease: 'none',
+              scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
+            });
           }
-        );
-        // Continuous horizontal parallax drift
-        gsap.to(marqueeRef.current, {
-          x: -100,
-          ease: 'none',
-          scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 2 },
+        }
+
+        stepsRef.current.forEach((step, i) => {
+          if (!step) return;
+          const fromX = reduceMotion ? 0 : isMobile ? 0 : i % 2 === 0 ? -80 : 80;
+
+          gsap.fromTo(step,
+            { autoAlpha: 0, x: fromX, y: reduceMotion ? 0 : isMobile ? 24 : 30 },
+            {
+              autoAlpha: 1, x: 0, y: 0, duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : i * 0.1, ease: 'power2.out',
+              scrollTrigger: reduceMotion ? undefined : { trigger: step, start: 'top 85%', toggleActions: 'play none none reverse' },
+            }
+          );
         });
-      }
+      },
+      section
+    );
 
-      // Steps reveal with alternating direction
-      stepsRef.current.forEach((step, i) => {
-        if (!step) return;
-        const fromX = i % 2 === 0 ? -80 : 80;
-
-        gsap.fromTo(step,
-          { opacity: 0, x: fromX, y: 30 },
-          {
-            opacity: 1, x: 0, y: 0, duration: 0.8, delay: i * 0.1, ease: 'power2.out',
-            scrollTrigger: { trigger: step, start: 'top 85%', toggleActions: 'play none none reverse' },
-          }
-        );
-      });
-    }, section);
-
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   const steps = [
@@ -81,7 +92,6 @@ export default function Lessons() {
       className="relative z-10 bg-charcoal pt-[80px] pb-[56px] md:pt-[160px] md:pb-[72px] overflow-hidden"
     >
       <div className="max-w-[1400px] mx-auto px-4 md:px-[2.5vw]">
-        {/* Section title */}
         <div ref={titleRef} className="mb-12 md:mb-20" style={{ opacity: 0 }}>
           <p className="text-[12px] uppercase tracking-[0.3em] text-vermilion font-body mb-6">
             Learn
@@ -94,7 +104,6 @@ export default function Lessons() {
           </h2>
         </div>
 
-        {/* Scrolling marquee text */}
         <div ref={marqueeRef} className="overflow-hidden mb-16 md:mb-24" style={{ opacity: 0 }}>
           <div className="flex w-max whitespace-nowrap animate-marquee motion-reduce:animate-none">
             {[0, 1].map((group) => (
@@ -109,7 +118,6 @@ export default function Lessons() {
           </div>
         </div>
 
-        {/* Two-phase steps */}
         <div className="grid gap-6 md:grid-cols-3 md:gap-8 mb-16 md:mb-24">
           {steps.map((step, i) => (
             <div
@@ -132,7 +140,6 @@ export default function Lessons() {
           ))}
         </div>
 
-        {/* Config grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {configs.map((cfg) => (
             <div

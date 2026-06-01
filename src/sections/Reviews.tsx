@@ -61,10 +61,10 @@ export default function Reviews() {
             }
           );
           const parallax = item.querySelector<HTMLDivElement>('.review-card-content');
-          if (!parallax || reduceMotion) return;
+          if (!parallax || reduceMotion || isMobile) return;
 
           gsap.to(parallax, {
-            x: isMobile ? -10 : -30,
+            x: -30,
             ease: 'none',
             scrollTrigger: { trigger: item, start: 'top bottom', end: 'bottom top', scrub: 1.5 },
           });

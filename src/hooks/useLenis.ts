@@ -5,10 +5,17 @@ import gsap from 'gsap';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const nativeScrollQuery = '(pointer: coarse), (max-width: 767px)';
+
 export function useLenis() {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
+    if (window.matchMedia(nativeScrollQuery).matches) {
+      ScrollTrigger.refresh();
+      return;
+    }
+
     const lenis = new Lenis({
       lerp: 0.08,
       smoothWheel: true,
