@@ -27,38 +27,36 @@ export default function Privacy() {
     mm.add(
       {
         isDesktop: '(min-width: 768px)',
+        isMobile: '(max-width: 767px)',
         reduceMotion: '(prefers-reduced-motion: reduce)',
       },
       (context) => {
-        const { isDesktop, reduceMotion } = context.conditions as { isDesktop: boolean; reduceMotion: boolean };
+        const { isDesktop, isMobile, reduceMotion } = context.conditions as { isDesktop: boolean; isMobile: boolean; reduceMotion: boolean };
 
         if (reduceMotion) {
           gsap.set(track, { clearProps: 'transform' });
           return;
         }
 
-        if (!isDesktop) {
-          gsap.set(track, { clearProps: 'transform' });
-          gsap.utils.toArray<HTMLElement>(track.querySelectorAll('article')).forEach((article) => {
-            const content = article.querySelectorAll('span, p, h2');
-            gsap.fromTo(content,
-              { y: 56, autoAlpha: 0.45 },
-              {
-                y: -42,
-                autoAlpha: 1,
-                ease: 'none',
-                stagger: 0.03,
-                scrollTrigger: {
-                  trigger: article,
-                  start: 'top bottom',
-                  end: 'bottom top',
-                  scrub: 1.2,
-                },
-              }
-            );
+        if (isMobile) {
+          gsap.set(track, { x: 0, y: 0 });
+          gsap.to(track, {
+            y: () => -(track.scrollHeight - window.innerHeight),
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top top',
+              end: () => `+=${track.scrollHeight - window.innerHeight}`,
+              scrub: 1,
+              pin,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+            },
           });
           return;
         }
+
+        if (!isDesktop) return;
 
         gsap.to(track, {
           x: () => -(track.scrollWidth - window.innerWidth),
@@ -84,20 +82,20 @@ export default function Privacy() {
     <section
       id="privacy"
       ref={sectionRef}
-      className="relative z-20 overflow-hidden bg-charcoal md:h-[calc(100vh+300vw)]"
+      className="relative z-20 overflow-hidden bg-charcoal motion-reduce:overflow-visible md:h-[calc(100vh+300vw)] motion-reduce:md:h-auto"
     >
       <div
         ref={pinRef}
-        className="relative z-20 w-full min-h-screen md:h-screen flex items-center overflow-hidden bg-charcoal py-24 md:py-0"
+        className="relative z-20 flex h-[100svh] w-full items-start overflow-hidden bg-charcoal motion-reduce:h-auto motion-reduce:overflow-visible md:h-screen md:items-center motion-reduce:md:h-auto"
       >
         <div
           ref={trackRef}
-          className="flex w-full flex-col gap-0 px-5 md:w-[400vw] md:flex-row md:gap-0 md:px-0"
+          className="flex w-full flex-col gap-0 px-5 motion-reduce:md:w-full motion-reduce:md:flex-col md:w-[400vw] md:flex-row md:gap-0 md:px-0"
         >
           {words.map((word, i) => (
             <article
               key={word.text}
-              className="relative flex min-h-[78vh] w-full shrink-0 flex-col justify-center overflow-hidden border-t border-off-white/10 bg-transparent py-16 md:h-screen md:w-screen md:border-0 md:px-[8vw]"
+              className="relative flex min-h-[100svh] w-full shrink-0 flex-col justify-center overflow-hidden border-t border-off-white/10 bg-transparent py-16 md:h-screen md:w-screen md:border-0 md:px-[8vw]"
             >
               <span className="absolute right-6 top-6 font-body text-[13px] leading-none tracking-[0.32em] text-vermilion/50 md:right-[8vw] md:top-[14vh]">
                 0{i + 1} / 04

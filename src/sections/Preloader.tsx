@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 
 interface PreloaderProps {
@@ -10,6 +10,28 @@ export default function Preloader({ onComplete }: PreloaderProps) {
   const textRef = useRef<HTMLDivElement>(null);
   const circleRef = useRef<SVGCircleElement>(null);
   const [progress, setProgress] = useState(0);
+
+  const handleComplete = useCallback(() => {
+    const tl = gsap.timeline();
+
+    tl.to(textRef.current, {
+      scale: 0.8,
+      opacity: 0,
+      duration: 0.6,
+      ease: 'power2.inOut',
+    })
+      .to(
+        containerRef.current,
+        {
+          scaleY: 0,
+          transformOrigin: 'top',
+          duration: 0.8,
+          ease: 'power3.inOut',
+          onComplete,
+        },
+        '-=0.2'
+      );
+  }, [onComplete]);
 
   useEffect(() => {
     const duration = 2500;
@@ -33,29 +55,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     }, 16);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const handleComplete = () => {
-    const tl = gsap.timeline();
-
-    tl.to(textRef.current, {
-      scale: 0.8,
-      opacity: 0,
-      duration: 0.6,
-      ease: 'power2.inOut',
-    })
-      .to(
-        containerRef.current,
-        {
-          scaleY: 0,
-          transformOrigin: 'top',
-          duration: 0.8,
-          ease: 'power3.inOut',
-          onComplete,
-        },
-        '-=0.2'
-      );
-  };
+  }, [handleComplete]);
 
   const circumference = 2 * Math.PI * 48;
 
@@ -69,7 +69,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
           className="font-display text-off-white text-[96px] leading-none tracking-[-1.5px]"
           style={{ letterSpacing: '-1.5px' }}
         >
-          KA
+          読路
         </span>
 
         <div className="relative w-[100px] h-[100px]">
