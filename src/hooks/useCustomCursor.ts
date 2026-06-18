@@ -18,12 +18,20 @@ export function useCustomCursor() {
       targetRef.current.y = e.clientY;
     };
 
-    const onMouseEnterLink = () => {
-      isHoveringRef.current = true;
+    const hoverSelector = 'a, button, [data-cursor-hover]';
+
+    // Delegate so elements mounted after this effect (e.g. nav buttons revealed
+    // once the preloader clears) still trigger the hover state.
+    const onPointerOver = (e: Event) => {
+      if ((e.target as Element).closest(hoverSelector)) {
+        isHoveringRef.current = true;
+      }
     };
 
-    const onMouseLeaveLink = () => {
-      isHoveringRef.current = false;
+    const onPointerOut = (e: Event) => {
+      if ((e.target as Element).closest(hoverSelector)) {
+        isHoveringRef.current = false;
+      }
     };
 
     const animate = () => {
@@ -47,21 +55,15 @@ export function useCustomCursor() {
     };
 
     document.addEventListener('mousemove', onMouseMove);
-
-    const links = document.querySelectorAll('a, button, [data-cursor-hover]');
-    links.forEach((link) => {
-      link.addEventListener('mouseenter', onMouseEnterLink);
-      link.addEventListener('mouseleave', onMouseLeaveLink);
-    });
+    document.addEventListener('mouseover', onPointerOver);
+    document.addEventListener('mouseout', onPointerOut);
 
     rafRef.current = requestAnimationFrame(animate);
 
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
-      links.forEach((link) => {
-        link.removeEventListener('mouseenter', onMouseEnterLink);
-        link.removeEventListener('mouseleave', onMouseLeaveLink);
-      });
+      document.removeEventListener('mouseover', onPointerOver);
+      document.removeEventListener('mouseout', onPointerOut);
       cancelAnimationFrame(rafRef.current);
     };
   }, []);

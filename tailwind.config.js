@@ -12,7 +12,7 @@ module.exports = {
         foreground: "hsl(var(--foreground))",
         charcoal: "#070806",
         "off-white": "#F6F0E5",
-        "dim-grey": "#8A8173",
+        dim: "#8A8173",
         vermilion: "#E6402E",
         primary: {
           DEFAULT: "hsl(var(--primary))",

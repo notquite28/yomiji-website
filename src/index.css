@@ -52,34 +52,4 @@
   .font-body {
     font-family: 'IBM Plex Sans', sans-serif;
   }
-
-  .text-vermilion {
-    color: #E6402E;
-  }
-
-  .bg-vermilion {
-    background-color: #E6402E;
-  }
-
-  .border-vermilion {
-    border-color: #E6402E;
-  }
-
-  .text-dim {
-    color: #8A8173;
-  }
-
-  .bg-charcoal {
-    background-color: #070806;
-  }
-
-  .text-offwhite {
-    color: #F6F0E5;
-  }
-}
-
-@layer utilities {
-  .clip-inset-0 {
-    clip-path: inset(0);
-  }
 }

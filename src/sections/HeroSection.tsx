@@ -130,7 +130,7 @@ export default function HeroSection() {
           src={heroVideoSrc}
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
           style={{ pointerEvents: 'none' }}
         />
 

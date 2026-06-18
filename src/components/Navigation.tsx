@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { getLenis } from '@/hooks/useLenis';
 
 interface NavigationProps {
   isLoaded: boolean;
@@ -19,16 +20,28 @@ export default function Navigation({ isLoaded }: NavigationProps) {
 
   }, [isLoaded]);
 
+  const prefersReducedMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   const scrollToTop = () => {
-    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    window.scrollTo({ top: 0, behavior });
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: prefersReducedMotion() });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   };
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (!el) return;
+
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(el, { immediate: prefersReducedMotion() });
+      return;
     }
+    el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   };
 
   return (

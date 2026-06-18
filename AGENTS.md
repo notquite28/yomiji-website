@@ -38,7 +38,7 @@ There is no `test` script, coverage command, or formatter script configured.
 ## Code Conventions & Common Patterns
 
 - Use TypeScript + React function components. Keep component-local animation state in refs unless React state is needed for rendering.
-- Use Tailwind utilities and existing theme tokens from `tailwind.config.js`: `charcoal`, `off-white`, `dim-grey`, `vermilion`, `font-display`, `font-body`.
+- Use Tailwind utilities and existing theme tokens from `tailwind.config.js`: `charcoal`, `off-white`, `dim`, `vermilion`, `font-display`, `font-body`.
 - Use the `@/*` alias for imports from `src`.
 - Animation code should:
   - register/use GSAP plugins explicitly where needed,

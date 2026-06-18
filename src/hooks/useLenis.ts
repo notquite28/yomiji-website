@@ -7,10 +7,24 @@ gsap.registerPlugin(ScrollTrigger);
 
 const nativeScrollQuery = '(pointer: coarse), (max-width: 767px)';
 
+// Module-level handle so non-React consumers (e.g. Navigation) can drive the
+// active Lenis instance instead of fighting it with native smooth scrolling.
+let activeLenis: Lenis | null = null;
+
+export function getLenis(): Lenis | null {
+  return activeLenis;
+}
+
 export function useLenis() {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
+    // Recompute pin/scrub positions once web fonts swap in, since the large
+    // display headings shift layout after triggers are first measured.
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => ScrollTrigger.refresh());
+    }
+
     if (window.matchMedia(nativeScrollQuery).matches) {
       ScrollTrigger.refresh();
       return;
@@ -22,6 +36,7 @@ export function useLenis() {
     });
 
     lenisRef.current = lenis;
+    activeLenis = lenis;
 
     lenis.on('scroll', ScrollTrigger.update);
 
@@ -40,6 +55,7 @@ export function useLenis() {
       gsap.ticker.lagSmoothing(500, 33);
       lenis.destroy();
       lenisRef.current = null;
+      activeLenis = null;
     };
   }, []);
 
